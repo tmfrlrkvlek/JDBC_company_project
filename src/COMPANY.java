@@ -36,10 +36,6 @@ public class Company {
 	static final ArrayList<JCheckBox> searchItemBoxes = new ArrayList<JCheckBox>();
 	static final JTable resultTable = new JTable(new DefaultTableModel());
 	
-	public static void main(String[] args) {
-		setFrame();
-	}
-	
 	public static void setFrame() {
 		JFrame frame = new JFrame();
 		frame.setSize(1000,800);
