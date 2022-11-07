@@ -9,7 +9,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
-public class COMPANY {
+public class Company {
 	static final String url = "jdbc:mysql://localhost:3306/COMPANY?serverTimeZone=UTC";
 	static final String user = "root";
 	static final String password = "root1234";
@@ -26,6 +26,11 @@ public class COMPANY {
 	static final JLabel selectedEmployeeCountLabel = new JLabel("인원수:");
 	static final DefaultTableModel currentData = new DefaultTableModel();
 	static final Map<String, String> selectedEmployee = new HashMap<String, String>();
+	
+	static final String updateRange[] = {"Address", "Sex", "Salary"};
+	static final JComboBox updateRangeBox = new JComboBox<String>(updateRange);
+	static final JTextField updateBox = new JTextField();
+	
 	
 	
 	static final ArrayList<JCheckBox> searchItemBoxes = new ArrayList<JCheckBox>();
@@ -53,6 +58,7 @@ public class COMPANY {
 		setSearchItems(panel);
 		setSearchButton(panel);
 		setResultBar(panel);
+		setUpdateField(panel);
 		
 		panel.setVisible(true);
 		container.add(panel);
@@ -201,6 +207,48 @@ public class COMPANY {
 		panel.add(searchButton);
 	}
 	
+	public static void setUpdateField(JPanel panel) {
+		JLabel updateLabel = new JLabel("수정: ");
+		updateLabel.setBounds(250, 680, 30, 30);
+		panel.add(updateLabel);
+		
+		updateRangeBox.setBounds(280, 670, 120, 50);
+		panel.add(updateRangeBox);
+		
+		updateBox.setBounds(400, 680, 200 , 30);
+		panel.add(updateBox);
+		
+		JButton updateButton = new JButton("UPDATE");
+		updateButton.setBounds(600, 680, 80, 30);
+		updateButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (selectedEmployee.isEmpty()) {
+					JOptionPane.showMessageDialog(null, "업데이트할 직원을 선택해주세요.");
+					return;
+				}
+				String sql = "Update EMPLOYEE SET " + (String) updateRangeBox.getSelectedItem() + " = ";
+				if ((Integer) updateRangeBox.getSelectedIndex() == 2) {
+					sql = sql + updateBox.getText();
+				} else { 
+					sql = sql + "'" + updateBox.getText() + "'";
+				}
+				sql = sql + " WHERE Ssn in (";
+				for (String strKey: selectedEmployee.keySet()) {
+					sql = sql + "'" + strKey + "',";
+				} 
+				sql = sql.substring(0, sql.length()-1) + ");";
+				runSQL(sql, (rs) -> {
+					System.out.print(rs);
+					search();
+					return null;
+				});
+				updateBox.setText("");
+			}
+		});
+		
+		panel.add(updateButton);
+	}
+	
 	public static void setResultBar(JPanel panel) {
 		selectedEmployeeLabel.setBounds(7, 650, 800, 30);
 		selectedEmployeeLabel.setVisible(true);
@@ -210,24 +258,47 @@ public class COMPANY {
 		selectedEmployeeCountLabel.setVisible(true);
 		panel.add(selectedEmployeeCountLabel);
 		
+		JButton insertButton = new JButton("데이터 추가");
+		insertButton.setBounds(800, 650, 150, 30);
+		insertButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String sql = "Select distinct Dnumber from department order by dnumber;";
+				runSelectSQL(sql, (result) -> {
+					try {
+						ArrayList<Integer> departmentNums = new ArrayList<Integer>();
+						while (result.next()) {
+							Integer dno = result.getInt("Dnumber");
+							departmentNums.add(dno);
+						}
+						Employee employee = new Employee(departmentNums.toArray(new Integer[0]));
+					} catch (SQLException error) {
+						System.out.println("showResult error " + error.getLocalizedMessage());
+					}
+					return null;
+				});
+			}
+		});
+		panel.add(insertButton);
+		
 		JButton deleteButton = new JButton("선택한 데이터 삭제");
 		deleteButton.setBounds(800, 680, 150, 30);
 		deleteButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				if (selectedEmployee.isEmpty()) {
+					JOptionPane.showMessageDialog(null, "삭제할 직원을 선택해주세요.");
+					return;
+				}
 				String sql = "Delete from EMPLOYEE where ssn IN (";
 				for (String strKey: selectedEmployee.keySet()) {
 					sql = sql + "'" + strKey + "',";
 				} 
 				sql = sql.substring(0, sql.length()-1) + ");";
 				runSQL(sql, (rs) -> {
-					selectedEmployee.clear();
-					selectedEmployeeLabel.setText("선택한 직원: ");
 					search();
 					return null;
 				});
 			}
 		});
-		
 		
 		panel.add(deleteButton);
 	}
@@ -266,7 +337,7 @@ public class COMPANY {
 				String fname = result.getString("eFname");
 				String minit = result.getString("eMinit");
 				String lname = result.getString("eLname");
-				String name = fname+" "+minit+" "+lname;
+				String name = fname+(minit==null ? "": " "+minit)+" "+lname;
 				for(int i = 1; i < column.size()-2; i++) {
 					if (column.get(i) == "Name") {
 						data[i] = name;
@@ -302,10 +373,21 @@ public class COMPANY {
 			resultTable.getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(new JCheckBox()));
 			resultTable.setVisible(true);
 			selectedEmployeeCountLabel.setText("인원수: "+model.getRowCount());
+			selectedEmployee.clear();
+			selectedEmployeeLabel.setText("선택한 직원: ");
 		} catch (SQLException e) {
 			System.out.println("showResult error " + e.getLocalizedMessage());
 		}
 		return null;
+	}
+
+	
+	public static void runInsertSQL(String sql) {
+		runSQL(sql, (rs) -> {
+			System.out.println(rs+"insert");
+			search();
+			return null;
+		});
 	}
 	
 	public static void runSelectSQL(String sql, Function <ResultSet, Void> completion) {
@@ -328,8 +410,10 @@ public class COMPANY {
 			try (Statement stmt = conn.prepareStatement(sql)) {
 				System.out.println(sql);
 				int rs = stmt.executeUpdate(sql);
-				if (rs == 1) {
+				System.out.println(rs);
+				if (rs > 0) {
 					completion.apply(null);
+					search();
 				}
 			}
 		} catch (SQLException e) {
@@ -389,3 +473,4 @@ public class COMPANY {
 		runSelectSQL(sql+";", rs -> showResult(column, rs));
 	}
 }
+
