@@ -223,7 +223,7 @@ public class Company {
 					JOptionPane.showMessageDialog(null, "업데이트할 직원을 선택해주세요.");
 					return;
 				}
-				String sql = "Update EMPLOYEE SET " + (String) updateRangeBox.getSelectedItem() + " = ";
+				String sql = "Update EMPLOYEE SET modified = now(), " + (String) updateRangeBox.getSelectedItem() + " = ";
 				if ((Integer) updateRangeBox.getSelectedIndex() == 2) {
 					sql = sql + updateBox.getText();
 				} else { 
