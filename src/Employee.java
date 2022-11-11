@@ -190,7 +190,7 @@ public class Employee extends JPanel {
 				sql = sql + ((address == null) ? "null, '":"'"+address+"', '")+sex+"', ";
 				sql = sql + ((salary == null) ? "null, ": salary+", ");
 				sql = sql + ((superSsn == null) ? "null, ": "'"+superSsn+"', ") + dno;
-				sql = sql + ", null, null);";
+				sql = sql + ", now(), now());";
 				Company.runInsertSQL(sql);
 				frame.dispose();
 			}

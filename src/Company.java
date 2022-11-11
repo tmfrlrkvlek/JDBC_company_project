@@ -57,12 +57,15 @@ public class Company {
         setSearchButton(panel);
         setResultBar(panel);
         setUpdateField(panel);
+        setOptionField(panel);
 
         panel.setVisible(true);
         container.add(panel);
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
+        
+        search();
     }
 
     public static void setSearchRanges(JPanel panel) {
@@ -246,7 +249,7 @@ public class Company {
                     JOptionPane.showMessageDialog(null, "업데이트할 직원을 선택해주세요.");
                     return;
                 }
-                String sql = "Update EMPLOYEE SET " + (String) updateRangeBox.getSelectedItem() + " = ";
+                String sql = "Update EMPLOYEE SET modified = now()," + (String) updateRangeBox.getSelectedItem() + " = ";
                 if ((Integer) updateRangeBox.getSelectedIndex() == 2) {
                     sql = sql + updateBox.getText();
                 } else {
@@ -556,5 +559,84 @@ public class Company {
         }
         runSelectSQL(sql + ";", rs -> showResult(column, rs));
     }
+
+	public static void setOptionField(JPanel panel) {
+		JButton showDepartmentButton = new JButton("부서별 직원 보기");
+		showDepartmentButton.setBounds(7, 730, 150, 30);
+		showDepartmentButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				showDepartmentGroup();
+			}
+		});
+		
+		panel.add(showDepartmentButton);
+	}	
+
+	public static void showDepartmentGroup() {
+		String sql = "Select e.dno, d.dname, e.fname, e.minit, e.lname, e.ssn, e.salary from employee e left join department d on d.dnumber = e.dno group by e.dno, d.dname, e.fname, e.minit, e.lname, e.ssn, e.salary order by dno;";
+		runSelectSQL(sql, (result) -> {
+			try {
+				JFrame frame = new JFrame();
+				frame.setSize(530,450);
+				
+				Container container = frame.getContentPane();
+				frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+				JPanel panel = new JPanel();
+				panel.setLayout(null);
+				
+				ArrayList<String> column = new ArrayList<>(Arrays.asList("Name", "Ssn", "Salary"));
+				Integer dno = -1;
+				Integer currentY = 0;
+				DefaultTableModel model = new DefaultTableModel();
+				JTable table = new JTable(model);
+				
+				while (result.next()) {
+					Object[] data = new Object[column.size()];
+					Object[] pkData = new Object[column.size()];
+					Integer tempDno = result.getInt("dno"); 
+					if (dno != tempDno) {
+						if (dno != -1) {
+							table.setModel(model);
+						}
+						dno = tempDno;
+						String dname = result.getString("dname");
+						JLabel title = new JLabel(dname);
+						title.setBounds(7, currentY, 200, 30);
+						panel.add(title);
+						
+						model = new DefaultTableModel(column.toArray(), 0);
+						table = new JTable(model);
+						JScrollPane scrollPane = new JScrollPane(table);
+						scrollPane.setBounds(7, currentY+30, 400, 100);
+						currentY += 150;
+						panel.add(scrollPane);
+					}
+					String fname = result.getString("fname");
+					String minit = result.getString("minit");
+					String lname = result.getString("lname");
+					String name = fname+(minit==null ? "": " "+minit)+" "+lname;
+					for(int i = 0; i < column.size(); i++) {
+						if (column.get(i) == "Name") {
+							data[i] = name;
+						} else {
+							data[i] = result.getString(column.get(i));				
+						}
+						pkData[i] = data[i];
+					}
+					model.addRow(data);
+				}
+				panel.setPreferredSize(new Dimension(530, currentY));
+				panel.setVisible(true);
+				table.setModel(model);
+				table.setVisible(true);
+				JScrollPane spanel = new JScrollPane(panel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+				container.add(spanel);
+				frame.setVisible(true);
+			} catch (SQLException e1) {
+				System.out.println("select dname error " + e1.getLocalizedMessage());
+			}
+			return null;
+		});
+	}
 }
 
