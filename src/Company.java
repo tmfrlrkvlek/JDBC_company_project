@@ -316,9 +316,65 @@ public class Company {
 
         panel.add(deleteButton);
     }
-    public static void  getEmployeeInfo(ArrayList<String> column, ResultSet result){
+    public static void set_emp_query_result_to_table(ArrayList<String> column, ResultSet result, DefaultTableModel model) throws SQLException {
+        while (result.next()) {
+            Object[] data = new Object[column.size() - 2];
+            Object[] pkData = new Object[column.size()];
+            //체크박스 초깃 값 false
+            data[0] = false;
 
+            String name = null;
 
+            for (int i = 1; i < column.size() - 2; i++) {
+                if (column.get(i) == "Dependent_name"){
+                    data[i] = result.getString("Dependent_name");
+                }
+                if (column.get(i) == "Name") {
+                    String fname = result.getString("eFname");
+                    String minit = result.getString("eMinit");
+                    String lname = result.getString("eLname");
+                    name = fname + (minit == null ? "" : " " + minit) + " " + lname;
+                    data[i] = name;
+                } else if (column.get(i) == "Supervisor") {
+                    // 상사 없는 경우
+                    if (result.getString("sFname") == null) {
+                        data[i] = "";
+                        // 상사 있는 경우
+                    } else {
+                        String sfname = result.getString("sFname");
+                        String sminit = result.getString("sMinit");
+                        String slname = result.getString("sLname");
+                        data[i] = sfname + " " + sminit + " " + slname;
+                    }
+                } else {
+                    data[i] = result.getString(column.get(i));
+                }
+                pkData[i] = data[i];
+            }
+
+            pkData[column.size() - 2] = result.getString("Ssn");
+            pkData[column.size() - 1] = name;
+
+            model.addRow(data);
+            currentData.addRow(pkData);
+        }
+    }
+
+    public static void set_dependent_query_result_to_table(ArrayList<String> column, ResultSet result, DefaultTableModel model) throws SQLException {
+        while (result.next()) {
+            Object[] data = new Object[column.size() - 2];
+            Object[] pkData = new Object[column.size()];
+            //체크박스 초깃 값 false
+            data[0] = false;
+
+            for (int i = 1; i < column.size() - 2; i++) {
+                data[i] = result.getString(column.get(i));
+                pkData[i] = data[i];
+            }
+
+            model.addRow(data);
+            currentData.addRow(pkData);
+        }
     }
     public static Void showResult(ArrayList<String> column, ResultSet result) {
         try {
@@ -351,48 +407,12 @@ public class Company {
             currentData.setColumnIdentifiers(column.toArray());
             currentData.setRowCount(0);
 
-            while (result.next()) {
-                Object[] data = new Object[column.size() - 2];
-                Object[] pkData = new Object[column.size()];
-                //체크박스 초깃 값 false
-                data[0] = false;
+            //employee 결과 출력의 경우
+            set_emp_query_result_to_table(column, result, model);
+            //dependent 결과 출력의 경우
+            set_dependent_query_result_to_table(column, result, model);
 
-                String name = null;
 
-                for (int i = 1; i < column.size() - 2; i++) {
-                    if (column.get(i) == "Dependent_name"){
-                        data[i] = result.getString("Dependent_name");
-                    }
-                    if (column.get(i) == "Name") {
-                        String fname = result.getString("eFname");
-                        String minit = result.getString("eMinit");
-                        String lname = result.getString("eLname");
-                        name = fname + (minit == null ? "" : " " + minit) + " " + lname;
-                        data[i] = name;
-                    } else if (column.get(i) == "Supervisor") {
-                        // 상사 없는 경우
-                        if (result.getString("sFname") == null) {
-                            data[i] = "";
-                            // 상사 있는 경우
-                        } else {
-                            String sfname = result.getString("sFname");
-                            String sminit = result.getString("sMinit");
-                            String slname = result.getString("sLname");
-                            data[i] = sfname + " " + sminit + " " + slname;
-                        }
-                    } else {
-                        data[i] = result.getString(column.get(i));
-                    }
-                    pkData[i] = data[i];
-                }
-
-                pkData[column.size() - 2] = result.getString("Ssn");
-                pkData[column.size() - 1] = name;
-
-                model.addRow(data);
-
-                currentData.addRow(pkData);
-            }
             resultTable.setModel(model);
 
             resultTable.getColumnModel().getColumn(0).setCellRenderer(new DefaultTableCellRenderer() {
