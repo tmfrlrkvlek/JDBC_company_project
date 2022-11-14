@@ -368,11 +368,14 @@ public class Company {
         while (result.next()) {
             Object[] data = new Object[column.size() - 2];
             Object[] pkData = new Object[column.size()];
+
             //체크박스 초깃 값 false
             data[0] = false;
 
             for (int i = 1; i < column.size() - 2; i++) {
+                System.out.println(column.get(i));
                 data[i] = result.getString(column.get(i));
+                System.out.println(data[i]);
                 pkData[i] = data[i];
             }
 
@@ -535,14 +538,18 @@ public class Company {
             }
         } else if (searchRangeIdx == 6) {
             column.clear();
-            column.add("Dependent_name");
+            column.add("선택");
+            column.add("dependent_name");
+            column.add("sex");
+            column.add("bdate");
+            column.add("relationship");
             String[] name = ((String) dependentBox.getText()).split(" ");
             if (name.length == 3) {
                 String fname = name[0];
                 String minit = name[1];
                 String lname = name[2];
 //                sql = "select * From EMPLOYEE";
-                sql = "select d.Dependent_name from DEPENDENT d where d.Essn = (select s.Ssn from EMPLOYEE s where s.fname = '" + fname + "' AND s.minit = '" + minit + "' AND s.lname = '" + lname + "')";
+                sql = "select d.dependent_name,d.bdate,d.sex,d.relationship from DEPENDENT d where d.Essn = (select s.Ssn from EMPLOYEE s where s.fname = '" + fname + "' AND s.minit = '" + minit + "' AND s.lname = '" + lname + "')";
             } else {
                 JOptionPane.showMessageDialog(null, "이름을 정상적으로 입력해주세요\n(ex Jennifer S Wallace");
             }
