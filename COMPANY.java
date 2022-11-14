@@ -57,8 +57,9 @@ public class COMPANY {
 		setResultBar(panel);
 		setUpdateField(panel);
 		setOptionField(panel);
+		///////Update salary by department button add
 		setUpdateByDep(panel);
-		
+		/////////////
 		panel.setVisible(true);
 		container.add(panel);
 		
@@ -311,7 +312,7 @@ public class COMPANY {
 
 		panel.add(showDepartmentButton);
 	}
-	/////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////Update action listener 
 	public static void setUpdateByDep(JPanel panel) {
 		JButton updateByDep = new JButton("부서별로 엡데이트하기");
 		updateByDep.setBounds(180, 730, 150, 30);
@@ -559,7 +560,7 @@ public class COMPANY {
 			return null;
 		});
 	}
-	
+///////////////////Update pop up jframe and sql execute	
 	public static void updateSalaryByDep() {
 		
 		String depNames[] = {"Research", "Headquarters","Administration"};
