@@ -83,6 +83,7 @@ public class Company {
                 dependentBox.setText("");
                 dependentBox.setVisible(false);
                 if (s == searchRange[1]) {
+                    dependent_search_flag = false;
                     String sql = "Select dname from DEPARTMENT;";
                     runSelectSQL(sql, (rs) -> {
                         try {
@@ -98,6 +99,7 @@ public class Company {
                         return null;
                     });
                 } else if (s == searchRange[2]) {
+                    dependent_search_flag = false;
                     String sql = "Select distinct sex from EMPLOYEE;";
                     runSelectSQL(sql, (rs) -> {
                         try {
@@ -114,12 +116,16 @@ public class Company {
                     });
                 } else if (s == searchRange[3]) {
                     salaryBox.setVisible(true);
+                    dependent_search_flag = false;
                 } else if (s == searchRange[4]) {
                     bdateBox.setVisible(true);
+                    dependent_search_flag = false;
                 } else if (s == searchRange[5]) {
                     subordinateBox.setVisible(true);
+                    dependent_search_flag = false;
                 } else if (s == searchRange[6]) {
                     dependentBox.setVisible(true);
+                    dependent_search_flag = true;
                     //Todo 하단 체크박스를 안보이게 만들려고 함.
                     for (int i = 0; i < searchItemBoxes.size(); i++) {
 
@@ -326,9 +332,7 @@ public class Company {
             String name = null;
 
             for (int i = 1; i < column.size() - 2; i++) {
-                if (column.get(i) == "Dependent_name"){
-                    data[i] = result.getString("Dependent_name");
-                }
+
                 if (column.get(i) == "Name") {
                     String fname = result.getString("eFname");
                     String minit = result.getString("eMinit");
@@ -354,7 +358,7 @@ public class Company {
 
             pkData[column.size() - 2] = result.getString("Ssn");
             pkData[column.size() - 1] = name;
-
+//            System.out.println(Arrays.toString(data));
             model.addRow(data);
             currentData.addRow(pkData);
         }
@@ -372,6 +376,7 @@ public class Company {
                 pkData[i] = data[i];
             }
 
+            System.out.println(Arrays.toString(data));
             model.addRow(data);
             currentData.addRow(pkData);
         }
@@ -382,7 +387,6 @@ public class Company {
                 @Override
                 public void setValueAt(Object value, int row, int col) {
                     super.setValueAt(value, row, col);
-
                     if (col == 0) {
                         String ssn = (String) currentData.getValueAt(row, currentData.getColumnCount() - 2);
                         String name = (String) currentData.getValueAt(row, currentData.getColumnCount() - 1);
@@ -407,11 +411,15 @@ public class Company {
             currentData.setColumnIdentifiers(column.toArray());
             currentData.setRowCount(0);
 
-            //employee 결과 출력의 경우
-            set_emp_query_result_to_table(column, result, model);
-            //dependent 결과 출력의 경우
-            set_dependent_query_result_to_table(column, result, model);
-
+            if (dependent_search_flag)
+            {
+                //dependent 결과 출력의 경우
+                set_dependent_query_result_to_table(column, result, model);
+                dependent_search_flag = false;
+            } else {
+                //employee 결과 출력의 경우
+                set_emp_query_result_to_table(column, result, model);
+            }
 
             resultTable.setModel(model);
 
@@ -533,6 +541,7 @@ public class Company {
                 String fname = name[0];
                 String minit = name[1];
                 String lname = name[2];
+//                sql = "select * From EMPLOYEE";
                 sql = "select d.Dependent_name from DEPENDENT d where d.Essn = (select s.Ssn from EMPLOYEE s where s.fname = '" + fname + "' AND s.minit = '" + minit + "' AND s.lname = '" + lname + "')";
             } else {
                 JOptionPane.showMessageDialog(null, "이름을 정상적으로 입력해주세요\n(ex Jennifer S Wallace");
