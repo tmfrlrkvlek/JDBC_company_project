@@ -170,6 +170,7 @@ public class Company {
 				String sql = "Select distinct Dnumber, Dname from department order by dnumber;";
                 runSelectSQL(sql, (result) -> {
                     try {
+                    	int num = 0;
                         ArrayList<Integer> departmentNums = new ArrayList<Integer>();
                         ArrayList<String> departmentNames = new ArrayList<String>();
                         while (result.next()) {
@@ -177,8 +178,13 @@ public class Company {
                             String dname = result.getString("Dname");
                             departmentNums.add(dno);
                             departmentNames.add(dname);
+                            num += 1;
                         }
-                        updateSalaryByDep(departmentNums.toArray(new Integer[0]), departmentNames.toArray(new String[0]));
+                        if (num > 0) {
+                        	updateSalaryByDep(departmentNums.toArray(new Integer[0]), departmentNames.toArray(new String[0]));
+                        } else {
+                        	JOptionPane.showMessageDialog(null, "부서가 하나도 존재하지 않습니다.");
+                        }
                     } catch (SQLException error) {
                         System.out.println("showResult error " + error.getLocalizedMessage());
                     }
