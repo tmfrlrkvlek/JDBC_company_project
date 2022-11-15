@@ -58,6 +58,7 @@ public class Company {
         setResultBar(panel);
         setUpdateField(panel);
         setOptionField(panel);
+        setUpdateByDep(panel);
 
         panel.setVisible(true);
         container.add(panel);
@@ -164,6 +165,95 @@ public class Company {
         dependentBox.setVisible(false);
         panel.add(dependentBox);
     }
+    
+    public static void setUpdateByDep(JPanel panel) {
+		JButton updateByDep = new JButton("부서별 월급 일괄 업데이트");
+		updateByDep.setBounds(180, 730, 200, 30);
+		updateByDep.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				updateSalaryByDep();
+			}
+		});
+		panel.add(updateByDep);
+	}
+    
+    public static void updateSalaryByDep() {
+
+		String depNames[] = {"Research", "Headquarters","Administration"};
+		JComboBox <String> depBox = new JComboBox<String>(depNames);
+		JLabel selectDepLabel = new JLabel("Select Department");
+		JLabel inSalLabel = new JLabel("Input salary");
+		JButton updateButton = new JButton("Update");
+		JTextField salBox = new JTextField();
+		
+		JFrame frame = new JFrame();
+		frame.setSize(400,180);
+		
+		Container container = frame.getContentPane();
+		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		
+		JPanel panel = new JPanel();
+		panel.setLayout(null);
+		
+		selectDepLabel.setBounds(10,5,150,30 );
+		selectDepLabel.setVisible(true);
+		panel.add(selectDepLabel);
+		
+		depBox.setBounds(10, 40, 100,30);
+		depBox.setVisible(true);
+		panel.add(depBox);
+		
+		inSalLabel.setBounds(180,5,100,30);
+		inSalLabel.setVisible(true);
+		panel.add(inSalLabel);
+		
+		salBox.setBounds(180,40,100,30);
+		salBox.setVisible(true);
+		panel.add(salBox);
+		
+		updateButton.setBounds(300, 40, 80,30);
+		updateButton.setVisible(true);
+		panel.add(updateButton);
+		
+		
+		updateButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e ) {
+				String sal = salBox.getText();
+				String depName = (String) depBox.getSelectedItem();
+				int depValue = 0;
+				if (depName == "Research") {
+					depValue = 5;
+				}else if(depName == "Administration") {
+					depValue = 4;
+				}else if(depName == "Headquarters") {
+					depValue = 1;
+				}
+				Connection con = null;
+				PreparedStatement ps = null;
+				try {
+					con = DriverManager.getConnection(url,user,password);
+				         String query = "update employee set salary=? where dno=? ;";
+				         ps = con.prepareStatement(query);
+				         ps.setString(1, sal);
+				         ps.setInt(2, depValue);
+				         ps.executeUpdate();
+				         System.out.println("Record is updated successfully......");
+				         frame.dispose();
+				         search();
+				} 
+				catch (SQLException a) {
+				            a.printStackTrace();
+				}
+			}
+				
+		});
+		
+		panel.setVisible(true);
+		container.add(panel);
+		
+		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		frame.setVisible(true);
+	}
 
     public static void setSearchItems(JPanel panel) {
         JLabel searchItemLabel = new JLabel("검색 항목");
