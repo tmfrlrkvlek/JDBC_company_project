@@ -167,15 +167,30 @@ public class Company {
 		updateByDep.setBounds(180, 730, 200, 30);
 		updateByDep.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				updateSalaryByDep();
+				String sql = "Select distinct Dnumber, Dname from department order by dnumber;";
+                runSelectSQL(sql, (result) -> {
+                    try {
+                        ArrayList<Integer> departmentNums = new ArrayList<Integer>();
+                        ArrayList<String> departmentNames = new ArrayList<String>();
+                        while (result.next()) {
+                            Integer dno = result.getInt("Dnumber");
+                            String dname = result.getString("Dname");
+                            departmentNums.add(dno);
+                            departmentNames.add(dname);
+                        }
+                        updateSalaryByDep(departmentNums.toArray(new Integer[0]), departmentNames.toArray(new String[0]));
+                    } catch (SQLException error) {
+                        System.out.println("showResult error " + error.getLocalizedMessage());
+                    }
+                    return null;
+                });
 			}
 		});
 		panel.add(updateByDep);
 	}
     
-    public static void updateSalaryByDep() {
+    public static void updateSalaryByDep(Integer[] dnumbers, String[] depNames) {
 
-		String depNames[] = {"Research", "Headquarters","Administration"};
 		JComboBox <String> depBox = new JComboBox<String>(depNames);
 		JLabel selectDepLabel = new JLabel("Select Department");
 		JLabel inSalLabel = new JLabel("Input salary");
@@ -216,14 +231,16 @@ public class Company {
 			public void actionPerformed(ActionEvent e ) {
 				String sal = salBox.getText();
 				String depName = (String) depBox.getSelectedItem();
+				
 				int depValue = 0;
-				if (depName == "Research") {
-					depValue = 5;
-				}else if(depName == "Administration") {
-					depValue = 4;
-				}else if(depName == "Headquarters") {
-					depValue = 1;
-				}
+		    	for (int i = 0; i < dnumbers.length; i++) {
+		    		if (depNames[i] == depName) {
+		    			depValue = dnumbers[i];
+		    			break;
+		    		} 
+		        }
+		    	System.out.println(depValue);
+				
 				Connection con = null;
 				PreparedStatement ps = null;
 				try {
