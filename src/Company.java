@@ -12,7 +12,7 @@ import javax.swing.table.DefaultTableModel;
 public class Company {
     static final String url = "jdbc:mysql://localhost:3306/company?serverTimeZone=UTC";
     static final String user = "root";
-    static final String password = "tpwnd2315!";
+    static final String password = "root1234";
 
     static final String searchRange[] = {"전체", "부서", "성별", "연봉", "생일", "부하직원", "가족"};
     static final JComboBox searchRangeBox = new JComboBox<String>(searchRange);
