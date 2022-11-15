@@ -86,8 +86,8 @@ public class Company {
                 subordinateBox.setVisible(false);
                 dependentBox.setText("");
                 dependentBox.setVisible(false);
+                dependent_search_flag = false;
                 if (s == searchRange[1]) {
-                    dependent_search_flag = false;
                     String sql = "Select dname from DEPARTMENT;";
                     runSelectSQL(sql, (rs) -> {
                         try {
@@ -103,7 +103,6 @@ public class Company {
                         return null;
                     });
                 } else if (s == searchRange[2]) {
-                    dependent_search_flag = false;
                     String sql = "Select distinct sex from EMPLOYEE;";
                     runSelectSQL(sql, (rs) -> {
                         try {
@@ -120,13 +119,10 @@ public class Company {
                     });
                 } else if (s == searchRange[3]) {
                     salaryBox.setVisible(true);
-                    dependent_search_flag = false;
                 } else if (s == searchRange[4]) {
                     bdateBox.setVisible(true);
-                    dependent_search_flag = false;
                 } else if (s == searchRange[5]) {
                     subordinateBox.setVisible(true);
-                    dependent_search_flag = false;
                 } else if (s == searchRange[6]) {
                     dependentBox.setVisible(true);
                     dependent_search_flag = true;
@@ -506,7 +502,7 @@ public class Company {
 
             currentData.setColumnIdentifiers(column.toArray());
             currentData.setRowCount(0);
-
+            System.out.println(dependent_search_flag);
             if (dependent_search_flag)
             {
                 //dependent 결과 출력의 경우
